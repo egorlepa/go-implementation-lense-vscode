@@ -3,13 +3,6 @@ const vscode = require("vscode");
 class MyCodeLensProvider {
 
 	/**
-	 * @param {vscode.ExtensionContext} context
-	 */
-	constructor(context) {
-		this.context = context;
-	}
-
-	/**
 	 * @param {vscode.TextDocument} document
 	 */
 	async provideCodeLenses(document) {
@@ -29,9 +22,8 @@ class MyCodeLensProvider {
 				const command = {
 					title: `$(link) impls: ${implemented.length}`,
 					command: "goimpllense.goToImpl",
-					arguments: [s.uri, s.detail],
+					arguments: [s.uri, s.name, s.detail],
 				};
-				new vscode.CodeLens(new vscode.Range(s.position, s.position), command).isResolved
 				codeLenses.push(new vscode.CodeLens(new vscode.Range(s.position, s.position), command));
 			}
 		}
@@ -61,6 +53,7 @@ async function findSuitableSymbols(document) {
 			return {
 				uri: symbol.location.uri,
 				position: symbol.selectionRange.start,
+				name: symbol.name,
 				detail: symbol.detail
 			};
 		});
@@ -68,14 +61,15 @@ async function findSuitableSymbols(document) {
 
 /**
  * @param {vscode.Uri} uri
+ * @param {string} name
  * @param {string} detail
  */
-async function findSymbol(uri, detail) {
+async function findSymbol(uri, name, detail) {
 	/** @type {(vscode.SymbolInformation & vscode.DocumentSymbol)[]} */
 	let symbols = await vscode.commands.executeCommand("vscode.executeDocumentSymbolProvider", uri);
 	symbols = flattenSymbols(symbols);
 	return symbols
-		.find((symbol) => symbol.detail === detail)
+		.find((symbol) => symbol.name === name && symbol.detail === detail)
 }
 
 /**
@@ -102,16 +96,16 @@ async function findImplemented(symbol) {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-	const provider = new MyCodeLensProvider(context);
+	const provider = new MyCodeLensProvider();
 
 	context.subscriptions.push(
 		vscode.languages.registerCodeLensProvider({ pattern: "**/*.go" }, provider)
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("goimpllense.goToImpl", async (uri, detail) => {
+		vscode.commands.registerCommand("goimpllense.goToImpl", async (uri, name, detail) => {
 			const editor = await vscode.window.showTextDocument(uri);
-			const symbol = await findSymbol(uri, detail)
+			const symbol = await findSymbol(uri, name, detail)
 			editor.selection = new vscode.Selection(symbol.selectionRange.start, symbol.selectionRange.start);
 			vscode.commands.executeCommand("editor.action.goToImplementation");
 		})

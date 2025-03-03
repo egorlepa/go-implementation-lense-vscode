@@ -12,3 +12,12 @@ Go Implementation Lense enhances your Go development experience in VS Code by ad
 2. It queries the implementation provider to determine available implementations.  
 3. A CodeLens link (e.g., **🔗 impls: 3**) is added above the symbol.  
 4. Clicking the link navigates to the implementations.  
+
+## Screenshots
+
+### 1
+![](./Screenshot_1.png)
+### 2
+![](./Screenshot_2.png)
+### 3
+![](./Screenshot_3.png)

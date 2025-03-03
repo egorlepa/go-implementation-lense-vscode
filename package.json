@@ -22,7 +22,8 @@
     "commands": [
       {
         "command": "goimpllense.goToImpl",
-        "title": "goimpllense.goToImpl"
+        "title": "goimpllense.goToImpl",
+        "enablement": "false"
       }
     ]
   },
